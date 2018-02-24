@@ -1,6 +1,14 @@
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_library", "includes_list", "hdr_list")
 
 config_setting(
+    name = "osx_x86_64",
+    constraint_values = [
+        "@bazel_tools//platforms:osx",
+        "@bazel_tools//platforms:x86_64",
+    ],
+)
+
+config_setting(
     name = "linux_x86_64",
     constraint_values = [
         "@bazel_tools//platforms:linux",
@@ -22,6 +30,11 @@ BOOST_CTX_ASM_SOURCES = select({
         "libs/context/src/asm/make_x86_64_sysv_elf_gas.S",
         "libs/context/src/asm/ontop_x86_64_sysv_elf_gas.S",
     ],
+    ":osx_x86_64": [
+        "libs/context/src/asm/jump_x86_64_sysv_macho_gas.S",
+        "libs/context/src/asm/make_x86_64_sysv_macho_gas.S",
+        "libs/context/src/asm/ontop_x86_64_sysv_macho_gas.S",
+    ],
     ":windows_x86_64": [
         "libs/context/src/asm/make_x86_64_ms_pe_masm.asm",
         "libs/context/src/asm/jump_x86_64_ms_pe_masm.asm",
@@ -32,7 +45,7 @@ BOOST_CTX_ASM_SOURCES = select({
 boost_library(
     name = "context",
     srcs = BOOST_CTX_ASM_SOURCES + select({
-        ":linux_x86_64": [
+        "//conditions:default": [
             "libs/context/src/posix/stack_traits.cpp",
         ],
         ":windows_x86_64": [
